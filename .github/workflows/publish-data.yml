@@ -68,7 +68,10 @@ jobs:
           for attempt in range(12):
               try:
                   assert json.loads(read('deployment.json')) == expected
-                  for path,key in [('data/public-papers-v3.json','compactPapersSha256'),('data/signals-v2/manifest.json','signalsManifestSha256')]:
+                  checks=[('data/public-papers-v3.json','compactPapersSha256'),('data/signals-v2/manifest.json','signalsManifestSha256')]
+                  if 'paperOverviewSha256' in expected:
+                      checks.append(('data/paper-overview.json','paperOverviewSha256'))
+                  for path,key in checks:
                       assert hashlib.sha256(read(path)).hexdigest() == expected[key]
                   print('Verified published data revision and manifest hashes'); break
               except Exception:
