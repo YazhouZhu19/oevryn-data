@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 2,
+  "sourceRevision": "f4b19af4e4d01c44ff0748712c1188d236a2af20",
+  "runId": "41891525582",
+  "paperCount": 9209,
+  "signalCount": 70691,
+  "collectedAt": "2026-10-25T16:43:51.280Z",
+  "signalsGeneratedAt": "2026-10-25T16:44:10.412Z",
+  "compactPapersSha256": "bdfcb0afd686e9d5b72c1d8593c372f099a06d9ceb413c35e6f9149f08f7e904",
+  "signalsManifestSha256": "fc6cbfdb099032db8fc3822f48a31ecf85dcec809f044491cbe8ce8dee95703e"
+}
