@@ -1,0 +1,89 @@
+name: Publish OEVRYN data
+on:
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: Source branch or commit (normally main)
+        required: true
+        default: main
+  schedule:
+    - cron: '47 * * * *'
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: oevryn-data-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: YazhouZhu19/YazhouZhu19.github.io
+          ref: ${{ inputs.source_ref || 'main' }}
+          path: source
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: source/tools/research-monitor/package-lock.json
+      - name: Build and verify modern data against complete archives
+        working-directory: source/tools/research-monitor
+        run: |
+          export MONITOR_SOURCE_REVISION="$(git rev-parse HEAD)"
+          export MONITOR_PREVIOUS_DATA_DIR="$GITHUB_WORKSPACE/published/data"
+          mkdir -p "$MONITOR_PREVIOUS_DATA_DIR"
+          npm ci
+          npm run build
+          mkdir -p "$GITHUB_WORKSPACE/next"
+          cp -a dist/data "$GITHUB_WORKSPACE/next/data"
+          cp dist/deployment.json "$GITHUB_WORKSPACE/next/deployment.json"
+          cp "$GITHUB_WORKSPACE/index.html" "$GITHUB_WORKSPACE/next/index.html"
+          touch "$GITHUB_WORKSPACE/next/.nojekyll"
+          echo "Source revision: $MONITOR_SOURCE_REVISION" >> "$GITHUB_STEP_SUMMARY"
+          du -sb "$GITHUB_WORKSPACE/next" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
+        with:
+          path: next
+      - id: deploy
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
+      - name: Verify published metadata and manifest hashes
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib, time, urllib.request
+          expected=json.loads(pathlib.Path('next/deployment.json').read_text())
+          base='https://yazhouzhu19.github.io/oevryn-data/'
+          def read(path):
+              with urllib.request.urlopen(base+path+'?verify='+str(time.time_ns()), timeout=30) as r: return r.read()
+          for attempt in range(12):
+              try:
+                  assert json.loads(read('deployment.json')) == expected
+                  for path,key in [('data/public-papers-v3.json','compactPapersSha256'),('data/signals-v2/manifest.json','signalsManifestSha256')]:
+                      assert hashlib.sha256(read(path)).hexdigest() == expected[key]
+                  print('Verified published data revision and manifest hashes'); break
+              except Exception:
+                  time.sleep(10)
+          else:
+              raise SystemExit('Published data verification failed')
+          PY
+      - name: Retain the successfully deployed generation for the next build
+        run: |
+          mkdir -p published
+          rsync -a --delete next/ published/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- published/
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore: retain verified public data generation'
+            git push origin HEAD:main
+          fi
