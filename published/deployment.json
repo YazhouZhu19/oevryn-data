@@ -1,12 +1,12 @@
 {
   "schemaVersion": 2,
-  "sourceRevision": "edea7feb288c20e4516619edffea8946120ae16f",
-  "runId": "42392370180",
+  "sourceRevision": "22b3fb47a21fcbd41d728069bc2bf3b977f02930",
+  "runId": "42411544894",
   "paperCount": 10764,
-  "signalCount": 81225,
-  "collectedAt": "2026-11-07T15:48:17.518Z",
-  "signalsGeneratedAt": "2026-11-07T15:48:38.519Z",
-  "compactPapersSha256": "6ae8d018192f0c113b440329e44468a2dd1d89488fcaaf532f23f035fa54127c",
-  "paperOverviewSha256": "79a8142ab14ec07cc986185698dc245ba385315dc777ca3243404467dc64aff0",
-  "signalsManifestSha256": "a4a078bd4612102a31762d63a3c817ee313f4e7d95efab9687d4da68425c9e7d"
+  "signalCount": 82387,
+  "collectedAt": "2026-11-07T20:22:10.320Z",
+  "signalsGeneratedAt": "2026-11-07T20:22:31.703Z",
+  "compactPapersSha256": "1262cf3f13a7e423aceefaa3a8c796c1c80a95f639acce6a670ae6214d74dd2e",
+  "paperOverviewSha256": "f9505672ae147c34cca4eed5670325a91746e4d41d34a7a7ffa26400a0db294c",
+  "signalsManifestSha256": "12d4f2d8b422267b6f900e5527f24db64404b0319749e127e6d3f35a2e6e246a"
 }
